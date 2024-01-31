@@ -52,13 +52,13 @@ Follow these steps to set up and run the project:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/mahmud-bhuiyan/feature-request-board-server.git
+   git clone https://github.com/mahmud-bhuiyan/SJI-feature-request-board-apir.git
    ```
 
 2. **Install dependencies:**
 
    ```bash
-   cd feature-request-board-server
+   cd SJI-feature-request-board-api
    npm install
    ```
 
