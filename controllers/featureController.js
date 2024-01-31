@@ -99,15 +99,7 @@ const getAllRequest = asyncWrapper(async (req, res) => {
     }
   }
 
-  // Count total items without pagination
-  const totalItems = await Feature.countDocuments({
-    isDeleted: false,
-    ...(statusFilter && { status: statusFilter }),
-  });
-
-  // Apply pagination
-  query = query.skip((page - 1) * limit).limit(limit);
-
+  // Execute query to get all features
   const features = await query.exec();
 
   // Filter out features created by soft deleted users
@@ -127,6 +119,21 @@ const getAllRequest = asyncWrapper(async (req, res) => {
     totalComments: feature.comments.count,
   }));
 
+  // Calculate total items after filtering
+  const totalItems = simplifiedFeatures.length;
+
+  // Apply pagination
+  const startIndex = (page - 1) * limit;
+  const endIndex = Math.min(startIndex + limit, totalItems);
+  const paginatedFeatures = simplifiedFeatures.slice(startIndex, endIndex);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalItems / limit);
+
+  // Check if there are more items beyond the current page
+  const hasMoreNext = page < totalPages;
+  const hasMorePrev = page > 1;
+
   // Calculate counts for each status
   const statusCounts = await Feature.aggregate([
     {
@@ -143,15 +150,9 @@ const getAllRequest = asyncWrapper(async (req, res) => {
     return acc;
   }, {});
 
-  const totalPages = Math.ceil(totalItems / limit);
-
-  // Check if there are more items beyond the current page
-  const hasMoreNext = page < totalPages;
-  const hasMorePrev = page > 1;
-
   res.status(200).json({
     message: "All features retrieved successfully",
-    features: simplifiedFeatures,
+    features: paginatedFeatures,
     pageInfo: {
       totalItems,
       totalPages,
